@@ -39,34 +39,54 @@ struct ClassInfo: Identifiable {
 // MARK: - Sample Data
 let sampleClasses: [ClassInfo] = [
     ClassInfo(name: "Math", assignments: [
-        [Assignment(name: "Homework 10.4", isUrgent: false), Assignment(name: "Quiz Ch. 10", isUrgent: true)],
-        [Assignment(name: "Homework 10.5", isUrgent: false), Assignment(name: "Review notes", isUrgent: false)],
-        [Assignment(name: "Study guide", isUrgent: false), Assignment(name: "Practice test", isUrgent: false)]
+        [Assignment(name: "Homework 10.4", isUrgent: false), Assignment(name: "Quiz Ch. 10", isUrgent: true)],      // Mon Apr 27
+        [Assignment(name: "Homework 10.5", isUrgent: false), Assignment(name: "Review notes", isUrgent: false)],    // Tue Apr 28
+        [Assignment(name: "Study guide", isUrgent: false), Assignment(name: "Practice test", isUrgent: false)],     // Wed Apr 29
+        [Assignment(name: "Problem Set 11", isUrgent: false)],                                                      // Thu Apr 30
+        [Assignment(name: "Quiz Ch. 11", isUrgent: true)],                                                         // Fri May 1
+        [Assignment(name: "Extra credit", isUrgent: false)],                                                       // Sat May 2
+        [Assignment(name: "Test Review", isUrgent: false)]                                                        // Sun May 3
     ]),
     ClassInfo(name: "Biology", assignments: [
-        [Assignment(name: "Lab Report", isUrgent: true), Assignment(name: "Flashcards", isUrgent: false)],
-        [Assignment(name: "Diagram review", isUrgent: false)],
-        [Assignment(name: "Read Ch. 8", isUrgent: false), Assignment(name: "Quiz prep", isUrgent: false)]
+        [Assignment(name: "Lab Report", isUrgent: true), Assignment(name: "Flashcards", isUrgent: false)],          // Mon Apr 27
+        [Assignment(name: "Diagram review", isUrgent: false)],                                                      // Tue Apr 28
+        [Assignment(name: "Read Ch. 8", isUrgent: false), Assignment(name: "Quiz prep", isUrgent: false)],          // Wed Apr 29
+        [Assignment(name: "Field trip prep", isUrgent: false)],                                                    // Thu Apr 30
+        [Assignment(name: "Lab quiz", isUrgent: true)],                                                            // Fri May 1
+        [Assignment(name: "Research notes", isUrgent: false)],                                                     // Sat May 2
+        [Assignment(name: "Flashcard review", isUrgent: false)]                                                    // Sun May 3
     ]),
     ClassInfo(name: "English", assignments: [
-        [Assignment(name: "Vocabulary list", isUrgent: false)],
-        [Assignment(name: "Essay Draft", isUrgent: false), Assignment(name: "Peer review", isUrgent: false)],
-        [Assignment(name: "Poem Analysis", isUrgent: true), Assignment(name: "Journal entry", isUrgent: false)]
+        [Assignment(name: "Vocabulary list", isUrgent: false)],                                                    // Mon Apr 27
+        [Assignment(name: "Essay Draft", isUrgent: false), Assignment(name: "Peer review", isUrgent: false)],       // Tue Apr 28
+        [Assignment(name: "Poem Analysis", isUrgent: true), Assignment(name: "Journal entry", isUrgent: false)],    // Wed Apr 29
+        [Assignment(name: "Reading assignment", isUrgent: false)],                                                 // Thu Apr 30
+        [Assignment(name: "Essay final", isUrgent: true)],                                                         // Fri May 1
+        [Assignment(name: "Book report prep", isUrgent: false)],                                                   // Sat May 2
+        [Assignment(name: "Reading quiz", isUrgent: false)]                                                        // Sun May 3
     ]),
     ClassInfo(name: "History", assignments: [
-        [Assignment(name: "Notes", isUrgent: false), Assignment(name: "Timeline", isUrgent: false)],
-        [Assignment(name: "Presentation", isUrgent: false)],
-        [Assignment(name: "Document reading", isUrgent: false)]
+        [Assignment(name: "Notes", isUrgent: false), Assignment(name: "Timeline", isUrgent: false)],                // Mon Apr 27
+        [Assignment(name: "Presentation", isUrgent: false)],                                                       // Tue Apr 28
+        [Assignment(name: "Document reading", isUrgent: false)],                                                   // Wed Apr 29
+        [Assignment(name: "Group discussion", isUrgent: false)],                                                   // Thu Apr 30
+        [Assignment(name: "Essay on WWI", isUrgent: true)],                                                        // Fri May 1
+        [Assignment(name: "Quiz prep", isUrgent: false)],                                                          // Sat May 2
+        [Assignment(name: "Map labeling", isUrgent: false)]                                                        // Sun May 3
     ]),
     ClassInfo(name: "Art", assignments: [
-        [Assignment(name: "Warm-up sketch", isUrgent: false)],
-        [Assignment(name: "Sketch #2", isUrgent: false), Assignment(name: "Materials prep", isUrgent: false)],
-        [Assignment(name: "Portfolio", isUrgent: true)]
+        [Assignment(name: "Warm-up sketch", isUrgent: false)],                                                     // Mon Apr 27
+        [Assignment(name: "Sketch #2", isUrgent: false), Assignment(name: "Materials prep", isUrgent: false)],      // Tue Apr 28
+        [Assignment(name: "Portfolio", isUrgent: true)],                                                           // Wed Apr 29
+        [Assignment(name: "Color mixing exercise", isUrgent: false)],                                              // Thu Apr 30
+        [Assignment(name: "Canvas prep", isUrgent: false)],                                                        // Fri May 1
+        [Assignment(name: "Sculpture study", isUrgent: false)],                                                    // Sat May 2
+        [Assignment(name: "Final project plan", isUrgent: true)]                                                  // Sun May 3
     ])
 ]
 
 let weekDates: [(String, String)] = [
-    ("Mon", "Apr 27"), ("Tue", "Apr 28"), ("Wed", "Apr 29")
+    ("Mon", "Apr 27"), ("Tue", "Apr 28"), ("Wed", "Apr 29"), ("Thu", "Apr 30"), ("Fri", "May 1"), ("Sat", "May 2"), ("Sun", "May 3")
 ]
 let monthName = "April"
 
@@ -87,7 +107,9 @@ struct ContentView: View {
                     .padding(.horizontal)
                     .padding(.top, 20)
                 Spacer()
-                Divider()
+                Rectangle()
+                    .fill(Color.gridGray)
+                    .frame(height: 1)
                     .padding(.horizontal)
                     .padding(.bottom, 8)
                 // Day Row
@@ -125,20 +147,19 @@ struct ContentView: View {
                     VStack(spacing: 1) {
                         ForEach(Array(sampleClasses.enumerated()), id: \.element.id) { rowIdx, classInfo in
                             HStack(spacing: 0) {
-                                // Class Name as vertical letters
-                                VStack(spacing: 0) {
-                                    ForEach(Array(classInfo.name), id: \.self) { letter in
-                                        Text(String(letter))
-                                            .font(.quicksand(size: 12, weight: .semibold))
-                                            .foregroundColor(.textGray)
-                                            .frame(maxWidth: .infinity)
-                                    }
-                                }
-                                .padding(.vertical, 8)
-                                .frame(width: 24, alignment: .center)
-                                .background(Color.bgWhite)
+                                // Class Name as rotated text
+                                Text(classInfo.name)
+                                    .font(.quicksand(size: 12, weight: .semibold))
+                                    .foregroundColor(.textGray)
+                                    .frame(maxWidth: 24, maxHeight: .infinity, alignment: .center)
+                                    .rotationEffect(.degrees(-90))
+                                    .padding(.vertical, 8)
+                                    .background(Color.bgWhite)
                                 
-                                Divider().frame(width: 1).background(Color.gridGray)
+                                Rectangle()
+                                    .fill(Color.gridGray)
+                                    .frame(width: 2)
+                                    .frame(maxHeight: .infinity)
                                 
                                 // Assignments for this class, this day
                                 let assignments = classInfo.assignments[safe: selectedDay] ?? []
@@ -158,7 +179,10 @@ struct ContentView: View {
                             }
                             .frame(height: cellHeight)
                             if rowIdx != rowCount - 1 {
-                                Divider().background(Color.gridGray)
+                                Rectangle()
+                                    .fill(Color.gridGray)
+                                    .frame(height: 2)
+                                    .frame(maxWidth: .infinity)
                             }
                         }
                     }
@@ -182,7 +206,7 @@ struct ContentView: View {
                     .padding()
                     .background(Circle().fill(Color.accentYellow).shadow(radius: 4))
             }
-            .padding(30)
+            .padding(20)
         }
         // Swipe gesture
         .gesture(

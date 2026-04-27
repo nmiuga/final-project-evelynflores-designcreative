@@ -6,3 +6,4 @@ Example:
 
 1. Centered the month and added some space under it. I also made it larger. 
 2. I made the assignment names larger and bolder. 
+3. I changed the padding for the floating plus button.
