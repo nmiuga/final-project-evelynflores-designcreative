@@ -40,27 +40,27 @@ struct ClassInfo: Identifiable {
 let sampleClasses: [ClassInfo] = [
     ClassInfo(name: "Math", assignments: [
         [Assignment(name: "Homework 10.4", isUrgent: false), Assignment(name: "Quiz Ch. 10", isUrgent: true)],
-        [Assignment(name: "Homework 10.5", isUrgent: false)],
-        [Assignment(name: "Study guide", isUrgent: false)]
+        [Assignment(name: "Homework 10.5", isUrgent: false), Assignment(name: "Review notes", isUrgent: false)],
+        [Assignment(name: "Study guide", isUrgent: false), Assignment(name: "Practice test", isUrgent: false)]
     ]),
     ClassInfo(name: "Biology", assignments: [
-        [Assignment(name: "Lab Report", isUrgent: true)],
-        [],
-        [Assignment(name: "Read Ch. 8", isUrgent: false)]
+        [Assignment(name: "Lab Report", isUrgent: true), Assignment(name: "Flashcards", isUrgent: false)],
+        [Assignment(name: "Diagram review", isUrgent: false)],
+        [Assignment(name: "Read Ch. 8", isUrgent: false), Assignment(name: "Quiz prep", isUrgent: false)]
     ]),
     ClassInfo(name: "English", assignments: [
-        [],
-        [Assignment(name: "Essay Draft", isUrgent: false)],
+        [Assignment(name: "Vocabulary list", isUrgent: false)],
+        [Assignment(name: "Essay Draft", isUrgent: false), Assignment(name: "Peer review", isUrgent: false)],
         [Assignment(name: "Poem Analysis", isUrgent: true), Assignment(name: "Journal entry", isUrgent: false)]
     ]),
     ClassInfo(name: "History", assignments: [
-        [Assignment(name: "Notes", isUrgent: false)],
+        [Assignment(name: "Notes", isUrgent: false), Assignment(name: "Timeline", isUrgent: false)],
         [Assignment(name: "Presentation", isUrgent: false)],
-        []
+        [Assignment(name: "Document reading", isUrgent: false)]
     ]),
     ClassInfo(name: "Art", assignments: [
-        [],
-        [Assignment(name: "Sketch #2", isUrgent: false)],
+        [Assignment(name: "Warm-up sketch", isUrgent: false)],
+        [Assignment(name: "Sketch #2", isUrgent: false), Assignment(name: "Materials prep", isUrgent: false)],
         [Assignment(name: "Portfolio", isUrgent: true)]
     ])
 ]
@@ -81,11 +81,15 @@ struct ContentView: View {
             VStack(spacing: 0) {
                 // Month
                 Text(monthName)
-                    .font(.quicksand(size: 18, weight: .bold))
+                    .font(.quicksand(size: 24, weight: .bold))
                     .foregroundColor(.textBlack)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(maxWidth: .infinity)
                     .padding(.horizontal)
                     .padding(.top, 20)
+                Spacer()
+                Divider()
+                    .padding(.horizontal)
+                    .padding(.bottom, 8)
                 // Day Row
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 20) {
@@ -118,22 +122,30 @@ struct ContentView: View {
                     let rowCount = sampleClasses.count
                     let cellHeight = geo.size.height / CGFloat(rowCount)
                     
-                    VStack(spacing: 0) {
+                    VStack(spacing: 1) {
                         ForEach(Array(sampleClasses.enumerated()), id: \.element.id) { rowIdx, classInfo in
                             HStack(spacing: 0) {
-                                // Class Name
-                                Text(classInfo.name)
-                                    .font(.quicksand(size: 12, weight: .semibold))
-                                    .foregroundColor(.textGray)
-                                    .frame(width: 80, alignment: .leading)
-                                    .padding(.leading, 8)
-                                    .background(Color.bgWhite)
+                                // Class Name as vertical letters
+                                VStack(spacing: 0) {
+                                    ForEach(Array(classInfo.name), id: \.self) { letter in
+                                        Text(String(letter))
+                                            .font(.quicksand(size: 12, weight: .semibold))
+                                            .foregroundColor(.textGray)
+                                            .frame(maxWidth: .infinity)
+                                    }
+                                }
+                                .padding(.vertical, 8)
+                                .frame(width: 24, alignment: .center)
+                                .background(Color.bgWhite)
+                                
                                 Divider().frame(width: 1).background(Color.gridGray)
+                                
                                 // Assignments for this class, this day
                                 let assignments = classInfo.assignments[safe: selectedDay] ?? []
                                 VStack(alignment: .leading, spacing: 4) {
                                     ForEach(assignments) { assignment in
                                         AssignmentCell(assignment: assignment)
+                                            .frame(maxWidth: .infinity)
                                             .onTapGesture {
                                                 // Navigation to detail (to be implemented)
                                             }
@@ -150,8 +162,12 @@ struct ContentView: View {
                             }
                         }
                     }
-                    .background(Color.gridGray)
+                    .background(Color.bgWhite)
                     .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(Color.gridGray, lineWidth: 2)
+                    )
                     .padding([.horizontal, .bottom])
                 }
                 .padding(.top, 4)
@@ -186,12 +202,13 @@ struct AssignmentCell: View {
     let assignment: Assignment
     var body: some View {
         Text(assignment.name)
-            .font(.quicksand(size: 10))
+            .font(.quicksand(size: 15, weight: .semibold))
             .foregroundColor(assignment.isUrgent ? .textBlack : .textGray)
             .padding(.vertical, 2)
             .padding(.horizontal, 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .background(
-                assignment.isUrgent ? Color.accentYellow : Color.bgWhite
+                assignment.isUrgent ? Color.highlightYellow : Color.bgWhite
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 6)
