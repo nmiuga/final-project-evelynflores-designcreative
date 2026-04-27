@@ -264,11 +264,16 @@ extension Array {
     }
 }
 
-// MARK: - AssignmentDetailView Placeholder
+// MARK: - AssignmentDetailView
 struct AssignmentDetailView: View {
     let assignment: Assignment
     let className: String
     let dayIndex: Int
+    
+    @State private var focusMinutes: Int = 25
+    @State private var breakMinutes: Int = 5
+    @State private var repeatCount: Int = 4
+    @State private var showFocusTimer: Bool = false
     
     var body: some View {
         VStack(spacing: 20) {
@@ -284,9 +289,89 @@ struct AssignmentDetailView: View {
             }
             .padding(.horizontal)
             
+            // Focus time picker
+            VStack(alignment: .leading, spacing: 8) {
+                Stepper(value: $focusMinutes, in: 1...120) {
+                    Text("Focus time: \(focusMinutes)")
+                        .font(.quicksand(size: 18))
+                }
+                .padding()
+                Stepper(value: $breakMinutes, in: 1...60) {
+                    Text("Break time: \(breakMinutes)")
+                        .font(.quicksand(size: 18))
+                }
+                .padding()
+                Stepper(value: $repeatCount, in: 1...10) {
+                    Text("Repeat count: \(repeatCount)")
+                        .font(.quicksand(size: 18))
+                }
+                .padding()
+            }
+            .padding(.horizontal)
+            .padding(.top, 10)
+            
             Spacer()
+            
+            Button(action: {
+                showFocusTimer = true
+            }) {
+                HStack {
+                    Image(systemName: "bee.fill")
+                        .font(.title2)
+                    Text("Start Focus")
+                        .font(.quicksand(size: 22, weight: .semibold))
+                }
+                .foregroundColor(.white)
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(Color.accentYellow)
+                .clipShape(RoundedRectangle(cornerRadius: 15))
+                .shadow(color: Color.accentYellow.opacity(0.6), radius: 8, x: 0, y: 4)
+            }
+            .padding(.horizontal)
+            .padding(.bottom)
         }
-        .padding()
+        .sheet(isPresented: $showFocusTimer) {
+            FocusTimerView(assignment: assignment, focusMinutes: focusMinutes, breakMinutes: breakMinutes, repeatCount: repeatCount)
+        }
+    }
+}
+
+// MARK: - FocusTimerView Placeholder
+struct FocusTimerView: View {
+    let assignment: Assignment
+    let focusMinutes: Int
+    let breakMinutes: Int
+    let repeatCount: Int
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Focus Timer")
+                .font(.quicksand(size: 28, weight: .bold))
+                .padding(.top, 40)
+            
+            Text(assignment.name)
+                .font(.quicksand(size: 24, weight: .semibold))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+            
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Focus Time: \(focusMinutes) minutes")
+                    .font(.quicksand(size: 20))
+                Text("Break Time: \(breakMinutes) minutes")
+                    .font(.quicksand(size: 20))
+                Text("Repeat Count: \(repeatCount)")
+                    .font(.quicksand(size: 20))
+            }
+            .padding(.horizontal)
+            
+            Spacer()
+            
+            Text("Timer and bee visuals will be added here.")
+                .font(.quicksand(size: 18))
+                .foregroundColor(.textGray)
+                .padding(.bottom, 40)
+        }
     }
 }
 
