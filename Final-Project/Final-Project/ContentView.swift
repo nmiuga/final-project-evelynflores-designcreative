@@ -272,15 +272,18 @@ struct AssignmentDetailView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            Text("Assignment Detail")
+            Text(assignment.name)
                 .font(.quicksand(size: 28, weight: .bold))
                 .padding(.top)
-            Text("Name: \(assignment.name)")
-                .font(.quicksand(size: 20))
-            Text("Class: \(className)")
-                .font(.quicksand(size: 20))
-            Text("Day: \(weekDates[safe: dayIndex]?.0 ?? "") \(weekDates[safe: dayIndex]?.1 ?? "")")
-                .font(.quicksand(size: 20))
+            
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Class: \(className)")
+                    .font(.quicksand(size: 20))
+                Text("Day: \(weekDates[safe: dayIndex]?.0 ?? "") \(weekDates[safe: dayIndex]?.1 ?? "")")
+                    .font(.quicksand(size: 20))
+            }
+            .padding(.horizontal)
+            
             Spacer()
         }
         .padding()
