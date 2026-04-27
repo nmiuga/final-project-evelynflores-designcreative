@@ -36,6 +36,14 @@ struct ClassInfo: Identifiable {
     let assignments: [[Assignment]] // Each inner array is a day’s assignments
 }
 
+// MARK: - Sheet Info Struct
+struct AssignmentDetailSheetInfo: Identifiable {
+    let assignment: Assignment
+    let className: String
+    let dayIndex: Int
+    var id: UUID { assignment.id }
+}
+
 // MARK: - Sample Data
 let sampleClasses: [ClassInfo] = [
     ClassInfo(name: "Math", assignments: [
@@ -94,129 +102,135 @@ let monthName = "April"
 struct ContentView: View {
     @State private var selectedDay: Int = 0 // Index into weekDates
     @Namespace private var anim
+    @State private var selectedAssignment: AssignmentDetailSheetInfo? = nil
     
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
-            Color.bgWhite.ignoresSafeArea()
-            VStack(spacing: 0) {
-                // Month
-                Text(monthName)
-                    .font(.quicksand(size: 24, weight: .bold))
-                    .foregroundColor(.textBlack)
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal)
-                    .padding(.top, 20)
-                Spacer()
-                Rectangle()
-                    .fill(Color.gridGray)
-                    .frame(height: 1)
-                    .padding(.horizontal)
-                    .padding(.bottom, 8)
-                // Day Row
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 20) {
-                        ForEach(0..<weekDates.count, id: \.self) { idx in
-                            let (day, date) = weekDates[idx]
-                            VStack(spacing: 4) {
-                                Text(day)
-                                    .font(.quicksand(size: 15, weight: .medium))
-                                    .foregroundColor(.textBlack)
-                                Text(date)
-                                    .font(.quicksand(size: 15, weight: .medium))
-                                    .foregroundColor(.textBlack)
-                            }
-                            .padding(8)
-                            .background {
-                                if idx == selectedDay {
-                                    RoundedRectangle(cornerRadius: 8).fill(Color.highlightYellow)
-                                        .matchedGeometryEffect(id: "selectedDay", in: anim)
+        NavigationStack {
+            ZStack(alignment: .bottomTrailing) {
+                Color.bgWhite.ignoresSafeArea()
+                VStack(spacing: 0) {
+                    // Month
+                    Text(monthName)
+                        .font(.quicksand(size: 24, weight: .bold))
+                        .foregroundColor(.textBlack)
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal)
+                        .padding(.top, 20)
+                    Spacer()
+                    Rectangle()
+                        .fill(Color.gridGray)
+                        .frame(height: 1)
+                        .padding(.horizontal)
+                        .padding(.bottom, 8)
+                    // Day Row
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 20) {
+                            ForEach(0..<weekDates.count, id: \.self) { idx in
+                                let (day, date) = weekDates[idx]
+                                VStack(spacing: 4) {
+                                    Text(day)
+                                        .font(.quicksand(size: 15, weight: .medium))
+                                        .foregroundColor(.textBlack)
+                                    Text(date)
+                                        .font(.quicksand(size: 15, weight: .medium))
+                                        .foregroundColor(.textBlack)
                                 }
-                            }
-                            .onTapGesture { selectedDay = idx }
-                        }
-                    }
-                    .padding(.horizontal)
-                }
-                .padding(.vertical, 10)
-
-                // Grid
-                GeometryReader { geo in
-                    let rowCount = sampleClasses.count
-                    let cellHeight = geo.size.height / CGFloat(rowCount)
-                    
-                    VStack(spacing: 1) {
-                        ForEach(Array(sampleClasses.enumerated()), id: \.element.id) { rowIdx, classInfo in
-                            HStack(spacing: 0) {
-                                // Class Name as rotated text
-                                Text(classInfo.name)
-                                    .font(.quicksand(size: 15, weight: .semibold))
-                                    .foregroundColor(.textGray)
-                                    .frame(maxWidth: 55 , maxHeight: .infinity, alignment: .center)
-                                    .rotationEffect(.degrees(-90))
-                                
-                                Rectangle()
-                                    .fill(Color.gridGray)
-                                    .frame(width: 2)
-                                    .frame(maxHeight: .infinity)
-                                
-                                // Assignments for this class, this day
-                                let assignments = classInfo.assignments[safe: selectedDay] ?? []
-                                VStack(alignment: .leading, spacing: 4) {
-                                    ForEach(assignments) { assignment in
-                                        AssignmentCell(assignment: assignment)
-                                            .frame(maxWidth: .infinity)
-                                            .onTapGesture {
-                                                // Navigation to detail (to be implemented)
-                                            }
+                                .padding(8)
+                                .background {
+                                    if idx == selectedDay {
+                                        RoundedRectangle(cornerRadius: 8).fill(Color.highlightYellow)
+                                            .matchedGeometryEffect(id: "selectedDay", in: anim)
                                     }
                                 }
-                                .padding(6)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .frame(height: cellHeight - 1)
-                                .background(Color.bgWhite)
-                            }
-                            .frame(height: cellHeight)
-                            if rowIdx != rowCount - 1 {
-                                Rectangle()
-                                    .fill(Color.gridGray)
-                                    .frame(height: 2)
-                                    .frame(maxWidth: .infinity)
+                                .onTapGesture { selectedDay = idx }
                             }
                         }
+                        .padding(.horizontal)
                     }
-                    .background(Color.bgWhite)
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.gridGray, lineWidth: 2)
-                    )
-                    .padding([.horizontal, .bottom])
+                    .padding(.vertical, 10)
+
+                    // Grid
+                    GeometryReader { geo in
+                        let rowCount = sampleClasses.count
+                        let cellHeight = geo.size.height / CGFloat(rowCount)
+                        
+                        VStack(spacing: 1) {
+                            ForEach(Array(sampleClasses.enumerated()), id: \.element.id) { rowIdx, classInfo in
+                                HStack(spacing: 0) {
+                                    // Class Name as rotated text
+                                    Text(classInfo.name)
+                                        .font(.quicksand(size: 15, weight: .semibold))
+                                        .foregroundColor(.textGray)
+                                        .frame(maxWidth: 55 , maxHeight: .infinity, alignment: .center)
+                                        .rotationEffect(.degrees(-90))
+                                    
+                                    Rectangle()
+                                        .fill(Color.gridGray)
+                                        .frame(width: 2)
+                                        .frame(maxHeight: .infinity)
+                                    
+                                    // Assignments for this class, this day
+                                    let assignments = classInfo.assignments[safe: selectedDay] ?? []
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        ForEach(assignments) { assignment in
+                                            AssignmentCell(assignment: assignment)
+                                                .frame(maxWidth: .infinity)
+                                                .onTapGesture {
+                                                    selectedAssignment = AssignmentDetailSheetInfo(assignment: assignment, className: classInfo.name, dayIndex: selectedDay)
+                                                }
+                                        }
+                                    }
+                                    .padding(6)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .frame(height: cellHeight - 1)
+                                    .background(Color.bgWhite)
+                                }
+                                .frame(height: cellHeight)
+                                if rowIdx != rowCount - 1 {
+                                    Rectangle()
+                                        .fill(Color.gridGray)
+                                        .frame(height: 2)
+                                        .frame(maxWidth: .infinity)
+                                }
+                            }
+                        }
+                        .background(Color.bgWhite)
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(Color.gridGray, lineWidth: 2)
+                        )
+                        .padding([.horizontal, .bottom])
+                    }
+                    .padding(.top, 4)
                 }
-                .padding(.top, 4)
+                // Floating Add Button
+                Button(action: {
+                    // Add assignment action (to be implemented)
+                }) {
+                    Image(systemName: "plus")
+                        .foregroundStyle(.white)
+                        .font(.system(size: 28, weight: .bold))
+                        .padding()
+                        .background(Circle().fill(Color.accentYellow).shadow(radius: 4))
+                }
+                .padding(20)
             }
-            // Floating Add Button
-            Button(action: {
-                // Add assignment action (to be implemented)
-            }) {
-                Image(systemName: "plus")
-                    .foregroundStyle(.white)
-                    .font(.system(size: 28, weight: .bold))
-                    .padding()
-                    .background(Circle().fill(Color.accentYellow).shadow(radius: 4))
+            // Swipe gesture
+            .gesture(
+                DragGesture()
+                    .onEnded { value in
+                        if value.translation.width < -40, selectedDay < weekDates.count - 1 {
+                            selectedDay += 1
+                        } else if value.translation.width > 40, selectedDay > 0 {
+                            selectedDay -= 1
+                        }
+                    }
+            )
+            .sheet(item: $selectedAssignment) { item in
+                AssignmentDetailView(assignment: item.assignment, className: item.className, dayIndex: item.dayIndex)
             }
-            .padding(20)
         }
-        // Swipe gesture
-        .gesture(
-            DragGesture()
-                .onEnded { value in
-                    if value.translation.width < -40, selectedDay < weekDates.count - 1 {
-                        selectedDay += 1
-                    } else if value.translation.width > 40, selectedDay > 0 {
-                        selectedDay -= 1
-                    }
-                }
-        )
     }
 }
 
@@ -247,6 +261,29 @@ struct AssignmentCell: View {
 extension Array {
     subscript(safe index: Int) -> Element? {
         indices.contains(index) ? self[index] : nil
+    }
+}
+
+// MARK: - AssignmentDetailView Placeholder
+struct AssignmentDetailView: View {
+    let assignment: Assignment
+    let className: String
+    let dayIndex: Int
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Assignment Detail")
+                .font(.quicksand(size: 28, weight: .bold))
+                .padding(.top)
+            Text("Name: \(assignment.name)")
+                .font(.quicksand(size: 20))
+            Text("Class: \(className)")
+                .font(.quicksand(size: 20))
+            Text("Day: \(weekDates[safe: dayIndex]?.0 ?? "") \(weekDates[safe: dayIndex]?.1 ?? "")")
+                .font(.quicksand(size: 20))
+            Spacer()
+        }
+        .padding()
     }
 }
 
