@@ -54,7 +54,7 @@ let sampleClasses: [ClassInfo] = [
         [Assignment(name: "Field trip prep", isUrgent: false)],                                                    // Thu Apr 30
         [Assignment(name: "Lab quiz", isUrgent: true)],                                                            // Fri May 1
         [Assignment(name: "Research notes", isUrgent: false)],                                                     // Sat May 2
-        [Assignment(name: "Flashcard review", isUrgent: false)]                                                    // Sun May 3
+        [Assignment(name: "Flashcard review", isUrgent: false)],                                                    // Sun May 3
     ]),
     ClassInfo(name: "English", assignments: [
         [Assignment(name: "Vocabulary list", isUrgent: false)],                                                    // Mon Apr 27
@@ -149,12 +149,10 @@ struct ContentView: View {
                             HStack(spacing: 0) {
                                 // Class Name as rotated text
                                 Text(classInfo.name)
-                                    .font(.quicksand(size: 12, weight: .semibold))
+                                    .font(.quicksand(size: 15, weight: .semibold))
                                     .foregroundColor(.textGray)
-                                    .frame(maxWidth: 24, maxHeight: .infinity, alignment: .center)
+                                    .frame(maxWidth: 55 , maxHeight: .infinity, alignment: .center)
                                     .rotationEffect(.degrees(-90))
-                                    .padding(.vertical, 8)
-                                    .background(Color.bgWhite)
                                 
                                 Rectangle()
                                     .fill(Color.gridGray)
