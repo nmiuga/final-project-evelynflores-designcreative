@@ -429,41 +429,217 @@ struct AssignmentDetailView: View {
     }
 }
 
-// MARK: - FocusTimerView Placeholder
+// MARK: - FocusTimerView Full Implementation
 struct FocusTimerView: View {
     let assignment: Assignment
     let focusMinutes: Int
     let breakMinutes: Int
     let repeatCount: Int
     
+    @Environment(\.dismiss) private var dismiss
+    
+    @State private var isRunning: Bool = false
+    @State private var isFocusPeriod: Bool = true
+    @State private var timeRemaining: Int
+    @State private var currentRound: Int = 1
+    @State private var timer: Timer? = nil
+    @State private var isComplete: Bool = false
+    
+    init(assignment: Assignment, focusMinutes: Int, breakMinutes: Int, repeatCount: Int) {
+        self.assignment = assignment
+        self.focusMinutes = focusMinutes
+        self.breakMinutes = breakMinutes
+        self.repeatCount = repeatCount
+        _timeRemaining = State(initialValue: focusMinutes * 60)
+    }
+    
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Focus Timer")
-                .font(.quicksand(size: 28, weight: .bold))
-                .padding(.top, 40)
+        VStack(spacing: 30) {
+            Spacer()
             
-            Text(assignment.name)
-                .font(.quicksand(size: 24, weight: .semibold))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
+            Image(systemName: "bee.fill")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 120, height: 120)
+                .foregroundColor(.accentYellow)
+                .shadow(color: Color.accentYellow.opacity(0.6), radius: 10, x: 0, y: 4)
             
-            VStack(alignment: .leading, spacing: 16) {
-                Text("Focus Time: \(focusMinutes) minutes")
+            if isComplete {
+                Text("🎉 Well done! 🎉")
+                    .font(.quicksand(size: 32, weight: .bold))
+                    .foregroundColor(.accentYellow)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+                
+                Text("You completed all \(repeatCount) cycles for \"\(assignment.name)\".")
                     .font(.quicksand(size: 20))
-                Text("Break Time: \(breakMinutes) minutes")
-                    .font(.quicksand(size: 20))
-                Text("Repeat Count: \(repeatCount)")
-                    .font(.quicksand(size: 20))
+                    .foregroundColor(.textBlack)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            } else {
+                Text(isFocusPeriod ? "Focus Time" : "Break Time")
+                    .font(.quicksand(size: 28, weight: .bold))
+                    .foregroundColor(isFocusPeriod ? .accentYellow : .highlightYellow)
+                
+                Text(timeString(from: timeRemaining))
+                    .font(.quicksand(size: 64, weight: .bold))
+                    .monospacedDigit()
+                    .foregroundColor(.textBlack)
+                
+                Text("Cycle \(currentRound) of \(repeatCount)")
+                    .font(.quicksand(size: 20, weight: .semibold))
+                    .foregroundColor(.textGray)
             }
-            .padding(.horizontal)
             
             Spacer()
             
-            Text("Timer and bee visuals will be added here.")
-                .font(.quicksand(size: 18))
-                .foregroundColor(.textGray)
-                .padding(.bottom, 40)
+            if isComplete {
+                Button(action: {
+                    dismiss()
+                }) {
+                    Text("End")
+                        .font(.quicksand(size: 22, weight: .semibold))
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.accentYellow)
+                        .clipShape(RoundedRectangle(cornerRadius: 15))
+                        .shadow(color: Color.accentYellow.opacity(0.6), radius: 8, x: 0, y: 4)
+                }
+                .padding(.horizontal)
+            } else {
+                HStack(spacing: 20) {
+                    if !isRunning {
+                        Button(action: startTimer) {
+                            Text(currentRound == 1 && isFocusPeriod ? "Start" : "Resume")
+                                .font(.quicksand(size: 22, weight: .semibold))
+                                .foregroundColor(.white)
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Color.accentYellow)
+                                .clipShape(RoundedRectangle(cornerRadius: 15))
+                                .shadow(color: Color.accentYellow.opacity(0.6), radius: 8, x: 0, y: 4)
+                        }
+                    } else {
+                        Button(action: pauseTimer) {
+                            Text("Pause")
+                                .font(.quicksand(size: 22, weight: .semibold))
+                                .foregroundColor(.white)
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Color.accentYellow)
+                                .clipShape(RoundedRectangle(cornerRadius: 15))
+                                .shadow(color: Color.accentYellow.opacity(0.6), radius: 8, x: 0, y: 4)
+                        }
+                    }
+                    
+                    Button(action: resetTimer) {
+                        Text("Reset")
+                            .font(.quicksand(size: 22, weight: .semibold))
+                            .foregroundColor(Color.accentYellow)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(
+                                RoundedRectangle(cornerRadius: 15)
+                                    .stroke(Color.accentYellow, lineWidth: 2.5)
+                            )
+                    }
+                }
+                .padding(.horizontal)
+                
+                Button(action: {
+                    dismiss()
+                }) {
+                    Text("End")
+                        .font(.quicksand(size: 22, weight: .semibold))
+                        .foregroundColor(.textGray)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(Color.textGray, lineWidth: 2.5)
+                        )
+                        .padding(.horizontal)
+                            
+                }
+            }
         }
+        .padding(.vertical, 30)
+        .onAppear {
+            // Ensure timer is stopped and time is correct on appear
+            stopTimer()
+            if isComplete {
+                // Already finished
+                return
+            }
+            // Initialize timeRemaining properly if not running
+            if !isRunning {
+                timeRemaining = isFocusPeriod ? focusMinutes * 60 : breakMinutes * 60
+            }
+        }
+        .onDisappear {
+            stopTimer()
+        }
+    }
+    
+    private func startTimer() {
+        guard !isRunning else { return }
+        isRunning = true
+        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+            tick()
+        }
+        RunLoop.current.add(timer!, forMode: .common)
+    }
+    
+    private func pauseTimer() {
+        isRunning = false
+        stopTimer()
+    }
+    
+    private func resetTimer() {
+        stopTimer()
+        isRunning = false
+        isComplete = false
+        isFocusPeriod = true
+        currentRound = 1
+        timeRemaining = focusMinutes * 60
+    }
+    
+    private func stopTimer() {
+        timer?.invalidate()
+        timer = nil
+    }
+    
+    private func tick() {
+        if timeRemaining > 0 {
+            timeRemaining -= 1
+        } else {
+            // Time's up, switch focus/break or finish
+            if isFocusPeriod {
+                // Switch to break
+                isFocusPeriod = false
+                timeRemaining = breakMinutes * 60
+            } else {
+                // Break over
+                if currentRound >= repeatCount {
+                    // Finished all cycles
+                    isComplete = true
+                    stopTimer()
+                    isRunning = false
+                } else {
+                    // Next round focus
+                    currentRound += 1
+                    isFocusPeriod = true
+                    timeRemaining = focusMinutes * 60
+                }
+            }
+        }
+    }
+    
+    private func timeString(from seconds: Int) -> String {
+        let mins = seconds / 60
+        let secs = seconds % 60
+        return String(format: "%02d:%02d", mins, secs)
     }
 }
 
