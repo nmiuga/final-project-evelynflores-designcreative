@@ -23,6 +23,29 @@ extension Font {
     }
 }
 
+// MARK: - SplashScreenView
+struct SplashScreenView: View {
+    var body: some View {
+        ZStack {
+            Color.accentYellow
+                .ignoresSafeArea()
+            VStack(spacing: 20) {
+                Image("splash-logo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 150, height: 150)
+                Text("Final Project")
+                    .font(.quicksand(size: 32, weight: .bold))
+                    .foregroundColor(.white)
+                Text("By Evelyn Flores")
+                    .font(.quicksand(size: 18, weight: .medium))
+                    .foregroundColor(.white.opacity(0.8))
+            }
+            .padding()
+        }
+    }
+}
+
 // MARK: - Data Models
 struct Assignment: Identifiable {
     let id: UUID
@@ -109,132 +132,148 @@ struct ContentView: View {
     @State private var selectedDay: Int = 0 // Index into weekDates
     @Namespace private var anim
     @State private var selectedAssignment: AssignmentDetailSheetInfo? = nil
+    @State private var showSplash: Bool = true
     
     var body: some View {
-        NavigationStack {
-            ZStack(alignment: .bottomTrailing) {
-                Color.bgWhite.ignoresSafeArea()
-                VStack(spacing: 0) {
-                    // Month
-                    Text(monthName)
-                        .font(.quicksand(size: 24, weight: .bold))
-                        .foregroundColor(.textBlack)
-                        .frame(maxWidth: .infinity)
-                        .padding(.horizontal)
-                        .padding(.top, 20)
-                    Spacer()
-                    Rectangle()
-                        .fill(Color.gridGray)
-                        .frame(height: 1)
-                        .padding(.horizontal)
-                        .padding(.bottom, 8)
-                    // Day Row
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 20) {
-                            ForEach(0..<weekDates.count, id: \.self) { idx in
-                                let (day, date) = weekDates[idx]
-                                VStack(spacing: 4) {
-                                    Text(day)
-                                        .font(.quicksand(size: 15, weight: .medium))
-                                        .foregroundColor(.textBlack)
-                                    Text(date)
-                                        .font(.quicksand(size: 15, weight: .medium))
-                                        .foregroundColor(.textBlack)
-                                }
-                                .padding(8)
-                                .background {
-                                    if idx == selectedDay {
-                                        RoundedRectangle(cornerRadius: 8).fill(Color.highlightYellow)
-                                            .matchedGeometryEffect(id: "selectedDay", in: anim)
+        ZStack {
+            if showSplash {
+                SplashScreenView()
+                    .transition(.opacity)
+            } else {
+                NavigationStack {
+                    ZStack(alignment: .bottomTrailing) {
+                        Color.bgWhite.ignoresSafeArea()
+                        VStack(spacing: 0) {
+                            // Month
+                            Text(monthName)
+                                .font(.quicksand(size: 24, weight: .bold))
+                                .foregroundColor(.textBlack)
+                                .frame(maxWidth: .infinity)
+                                .padding(.horizontal)
+                                .padding(.top, 20)
+                            Spacer()
+                            Rectangle()
+                                .fill(Color.gridGray)
+                                .frame(height: 1)
+                                .padding(.horizontal)
+                                .padding(.bottom, 8)
+                            // Day Row
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 20) {
+                                    ForEach(0..<weekDates.count, id: \.self) { idx in
+                                        let (day, date) = weekDates[idx]
+                                        VStack(spacing: 4) {
+                                            Text(day)
+                                                .font(.quicksand(size: 15, weight: .medium))
+                                                .foregroundColor(.textBlack)
+                                            Text(date)
+                                                .font(.quicksand(size: 15, weight: .medium))
+                                                .foregroundColor(.textBlack)
+                                        }
+                                        .padding(8)
+                                        .background {
+                                            if idx == selectedDay {
+                                                RoundedRectangle(cornerRadius: 8).fill(Color.highlightYellow)
+                                                    .matchedGeometryEffect(id: "selectedDay", in: anim)
+                                            }
+                                        }
+                                        .onTapGesture { selectedDay = idx }
                                     }
                                 }
-                                .onTapGesture { selectedDay = idx }
+                                .padding(.horizontal)
                             }
-                        }
-                        .padding(.horizontal)
-                    }
-                    .padding(.vertical, 10)
+                            .padding(.vertical, 10)
 
-                    // Grid
-                    GeometryReader { geo in
-                        let rowCount = sampleClasses.count
-                        let cellHeight = geo.size.height / CGFloat(rowCount)
-                        
-                        VStack(spacing: 1) {
-                            ForEach(Array(sampleClasses.enumerated()), id: \.element.id) { rowIdx, classInfo in
-                                HStack(spacing: 0) {
-                                    // Class Name as rotated text
-                                    Text(classInfo.name)
-                                        .font(.quicksand(size: 15, weight: .semibold))
-                                        .foregroundColor(.textGray)
-                                        .frame(maxWidth: 55 , maxHeight: .infinity, alignment: .center)
-                                        .rotationEffect(.degrees(-90))
-                                    
-                                    Rectangle()
-                                        .fill(Color.gridGray)
-                                        .frame(width: 2)
-                                        .frame(maxHeight: .infinity)
-                                    
-                                    // Assignments for this class, this day
-                                    let assignments = classInfo.assignments[safe: selectedDay] ?? []
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        ForEach(assignments) { assignment in
-                                            AssignmentCell(assignment: assignment)
-                                                .frame(maxWidth: .infinity)
-                                                .onTapGesture {
-                                                    selectedAssignment = AssignmentDetailSheetInfo(assignment: assignment, className: classInfo.name, dayIndex: selectedDay)
+                            // Grid
+                            GeometryReader { geo in
+                                let rowCount = sampleClasses.count
+                                let cellHeight = geo.size.height / CGFloat(rowCount)
+                                
+                                VStack(spacing: 1) {
+                                    ForEach(Array(sampleClasses.enumerated()), id: \.element.id) { rowIdx, classInfo in
+                                        HStack(spacing: 0) {
+                                            // Class Name as rotated text
+                                            Text(classInfo.name)
+                                                .font(.quicksand(size: 15, weight: .semibold))
+                                                .foregroundColor(.textGray)
+                                                .frame(maxWidth: 55 , maxHeight: .infinity, alignment: .center)
+                                                .rotationEffect(.degrees(-90))
+                                            
+                                            Rectangle()
+                                                .fill(Color.gridGray)
+                                                .frame(width: 2)
+                                                .frame(maxHeight: .infinity)
+                                            
+                                            // Assignments for this class, this day
+                                            let assignments = classInfo.assignments[safe: selectedDay] ?? []
+                                            VStack(alignment: .leading, spacing: 4) {
+                                                ForEach(assignments) { assignment in
+                                                    AssignmentCell(assignment: assignment)
+                                                        .frame(maxWidth: .infinity)
+                                                        .onTapGesture {
+                                                            selectedAssignment = AssignmentDetailSheetInfo(assignment: assignment, className: classInfo.name, dayIndex: selectedDay)
+                                                        }
                                                 }
+                                            }
+                                            .padding(6)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .frame(height: cellHeight - 1)
+                                            .background(Color.bgWhite)
+                                        }
+                                        .frame(height: cellHeight)
+                                        if rowIdx != rowCount - 1 {
+                                            Rectangle()
+                                                .fill(Color.gridGray)
+                                                .frame(height: 2)
+                                                .frame(maxWidth: .infinity)
                                         }
                                     }
-                                    .padding(6)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .frame(height: cellHeight - 1)
-                                    .background(Color.bgWhite)
                                 }
-                                .frame(height: cellHeight)
-                                if rowIdx != rowCount - 1 {
-                                    Rectangle()
-                                        .fill(Color.gridGray)
-                                        .frame(height: 2)
-                                        .frame(maxWidth: .infinity)
+                                .background(Color.bgWhite)
+                                .clipShape(RoundedRectangle(cornerRadius: 20))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .stroke(Color.gridGray, lineWidth: 2)
+                                )
+                                .padding([.horizontal, .bottom])
+                            }
+                            .padding(.top, 4)
+                        }
+                        // Floating Add Button
+                        Button(action: {
+                            // Add assignment action (to be implemented)
+                        }) {
+                            Image(systemName: "plus")
+                                .foregroundStyle(.white)
+                                .font(.system(size: 28, weight: .bold))
+                                .padding()
+                                .background(Circle().fill(Color.accentYellow).shadow(radius: 4))
+                        }
+                        .padding(20)
+                    }
+                    // Swipe gesture
+                    .gesture(
+                        DragGesture()
+                            .onEnded { value in
+                                if value.translation.width < -40, selectedDay < weekDates.count - 1 {
+                                    selectedDay += 1
+                                } else if value.translation.width > 40, selectedDay > 0 {
+                                    selectedDay -= 1
                                 }
                             }
-                        }
-                        .background(Color.bgWhite)
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color.gridGray, lineWidth: 2)
-                        )
-                        .padding([.horizontal, .bottom])
+                    )
+                    .sheet(item: $selectedAssignment) { item in
+                        AssignmentDetailView(assignment: item.assignment, className: item.className, dayIndex: item.dayIndex)
                     }
-                    .padding(.top, 4)
                 }
-                // Floating Add Button
-                Button(action: {
-                    // Add assignment action (to be implemented)
-                }) {
-                    Image(systemName: "plus")
-                        .foregroundStyle(.white)
-                        .font(.system(size: 28, weight: .bold))
-                        .padding()
-                        .background(Circle().fill(Color.accentYellow).shadow(radius: 4))
-                }
-                .padding(20)
+                .transition(.opacity)
             }
-            // Swipe gesture
-            .gesture(
-                DragGesture()
-                    .onEnded { value in
-                        if value.translation.width < -40, selectedDay < weekDates.count - 1 {
-                            selectedDay += 1
-                        } else if value.translation.width > 40, selectedDay > 0 {
-                            selectedDay -= 1
-                        }
-                    }
-            )
-            .sheet(item: $selectedAssignment) { item in
-                AssignmentDetailView(assignment: item.assignment, className: item.className, dayIndex: item.dayIndex)
+        }
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                withAnimation(.easeOut(duration: 0.5)) {
+                    showSplash = false
+                }
             }
         }
     }
@@ -445,6 +484,12 @@ struct FocusTimerView: View {
     @State private var timer: Timer? = nil
     @State private var isComplete: Bool = false
     
+    // Added state variable for flashing effect
+    @State private var showFlash: Bool = false
+    
+    // Added state for automatic start control
+    @State private var hasStartedAutomatically = false
+    
     init(assignment: Assignment, focusMinutes: Int, breakMinutes: Int, repeatCount: Int) {
         self.assignment = assignment
         self.focusMinutes = focusMinutes
@@ -454,117 +499,131 @@ struct FocusTimerView: View {
     }
     
     var body: some View {
-        VStack(spacing: 30) {
-            Spacer()
+        ZStack {
+            Color.bgWhite.ignoresSafeArea()
             
-            Image(systemName: "bee.fill")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 120, height: 120)
-                .foregroundColor(.accentYellow)
-                .shadow(color: Color.accentYellow.opacity(0.6), radius: 10, x: 0, y: 4)
+            // Overlay flash effect on entire ZStack, behind main content
+            Color.accentYellow.opacity(showFlash ? 0.65 : 0)
+                .animation(.easeInOut(duration: 0.25), value: showFlash)
+                .ignoresSafeArea()
             
-            if isComplete {
-                Text("🎉 Well done! 🎉")
-                    .font(.quicksand(size: 32, weight: .bold))
+            VStack(spacing: 30) {
+                Spacer()
+                
+                Image(systemName: "bee.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 120, height: 120)
                     .foregroundColor(.accentYellow)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+                    .shadow(color: Color.accentYellow.opacity(0.6), radius: 10, x: 0, y: 4)
                 
-                Text("You completed all \(repeatCount) cycles for \"\(assignment.name)\".")
-                    .font(.quicksand(size: 20))
-                    .foregroundColor(.textBlack)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-            } else {
-                Text(isFocusPeriod ? "Focus Time" : "Break Time")
-                    .font(.quicksand(size: 28, weight: .bold))
-                    .foregroundColor(isFocusPeriod ? .accentYellow : .highlightYellow)
-                
-                Text(timeString(from: timeRemaining))
-                    .font(.quicksand(size: 64, weight: .bold))
-                    .monospacedDigit()
-                    .foregroundColor(.textBlack)
-                
-                Text("Cycle \(currentRound) of \(repeatCount)")
-                    .font(.quicksand(size: 20, weight: .semibold))
-                    .foregroundColor(.textGray)
-            }
-            
-            Spacer()
-            
-            if isComplete {
-                Button(action: {
-                    dismiss()
-                }) {
-                    Text("End")
-                        .font(.quicksand(size: 22, weight: .semibold))
-                        .foregroundColor(.white)
+                if isComplete {
+                    Text("🎉 Well done! 🎉")
+                        .font(.quicksand(size: 32, weight: .bold))
+                        .foregroundColor(.accentYellow)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                    
+                    Text("You completed all \(repeatCount) cycles for \"\(assignment.name)\".")
+                        .font(.quicksand(size: 20))
+                        .foregroundColor(.textBlack)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                } else {
+                    Text(isFocusPeriod ? "Focus Time" : "Break Time")
+                        .font(.quicksand(size: 28, weight: .bold))
+                        .foregroundColor(.accentYellow)
+                    
+                    Text(timeString(from: timeRemaining))
+                        .font(.quicksand(size: 64, weight: .bold))
+                        .monospacedDigit()
+                        .foregroundColor(.textBlack)
                         .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.accentYellow)
-                        .clipShape(RoundedRectangle(cornerRadius: 15))
-                        .shadow(color: Color.accentYellow.opacity(0.6), radius: 8, x: 0, y: 4)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.bgWhite)
+                                .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+                        )
+                    
+                    Text("Cycle \(currentRound) of \(repeatCount)")
+                        .font(.quicksand(size: 20, weight: .semibold))
+                        .foregroundColor(.textGray)
                 }
-                .padding(.horizontal)
-            } else {
-                HStack(spacing: 20) {
-                    if !isRunning {
-                        Button(action: startTimer) {
-                            Text(currentRound == 1 && isFocusPeriod ? "Start" : "Resume")
-                                .font(.quicksand(size: 22, weight: .semibold))
-                                .foregroundColor(.white)
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(Color.accentYellow)
-                                .clipShape(RoundedRectangle(cornerRadius: 15))
-                                .shadow(color: Color.accentYellow.opacity(0.6), radius: 8, x: 0, y: 4)
+                
+                Spacer()
+                
+                if isComplete {
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        Text("End")
+                            .font(.quicksand(size: 22, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.accentYellow)
+                            .clipShape(RoundedRectangle(cornerRadius: 15))
+                            .shadow(color: Color.accentYellow.opacity(0.6), radius: 8, x: 0, y: 4)
+                    }
+                    .padding(.horizontal)
+                } else {
+                    HStack(spacing: 20) {
+                        if isRunning {
+                            Button(action: pauseTimer) {
+                                Text("Pause")
+                                    .font(.quicksand(size: 22, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .frame(maxWidth: .infinity)
+                                    .background(Color.accentYellow)
+                                    .clipShape(RoundedRectangle(cornerRadius: 15))
+                                    .shadow(color: Color.accentYellow.opacity(0.6), radius: 8, x: 0, y: 4)
+                            }
+                        } else {
+                            Button(action: startTimer) {
+                                Text("Resume")
+                                    .font(.quicksand(size: 22, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .frame(maxWidth: .infinity)
+                                    .background(Color.accentYellow)
+                                    .clipShape(RoundedRectangle(cornerRadius: 15))
+                                    .shadow(color: Color.accentYellow.opacity(0.6), radius: 8, x: 0, y: 4)
+                            }
                         }
-                    } else {
-                        Button(action: pauseTimer) {
-                            Text("Pause")
+                        
+                        Button(action: resetTimer) {
+                            Text("Reset")
                                 .font(.quicksand(size: 22, weight: .semibold))
-                                .foregroundColor(.white)
+                                .foregroundColor(Color.accentYellow)
                                 .padding()
                                 .frame(maxWidth: .infinity)
-                                .background(Color.accentYellow)
-                                .clipShape(RoundedRectangle(cornerRadius: 15))
-                                .shadow(color: Color.accentYellow.opacity(0.6), radius: 8, x: 0, y: 4)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 15)
+                                        .stroke(Color.accentYellow, lineWidth: 2.5)
+                                )
                         }
                     }
+                    .padding(.horizontal)
                     
-                    Button(action: resetTimer) {
-                        Text("Reset")
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        Text("End")
                             .font(.quicksand(size: 22, weight: .semibold))
-                            .foregroundColor(Color.accentYellow)
+                            .foregroundColor(.textGray)
                             .padding()
                             .frame(maxWidth: .infinity)
                             .background(
                                 RoundedRectangle(cornerRadius: 15)
-                                    .stroke(Color.accentYellow, lineWidth: 2.5)
+                                    .stroke(Color.textGray, lineWidth: 2.5)
                             )
+                            .padding(.horizontal)
                     }
                 }
-                .padding(.horizontal)
-                
-                Button(action: {
-                    dismiss()
-                }) {
-                    Text("End")
-                        .font(.quicksand(size: 22, weight: .semibold))
-                        .foregroundColor(.textGray)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(
-                            RoundedRectangle(cornerRadius: 15)
-                                .stroke(Color.textGray, lineWidth: 2.5)
-                        )
-                        .padding(.horizontal)
-                            
-                }
             }
+            .padding(.vertical, 30)
         }
-        .padding(.vertical, 30)
         .onAppear {
             // Ensure timer is stopped and time is correct on appear
             stopTimer()
@@ -573,7 +632,10 @@ struct FocusTimerView: View {
                 return
             }
             // Initialize timeRemaining properly if not running
-            if !isRunning {
+            if !isRunning && !hasStartedAutomatically {
+                startTimer()
+                hasStartedAutomatically = true
+            } else if !isRunning {
                 timeRemaining = isFocusPeriod ? focusMinutes * 60 : breakMinutes * 60
             }
         }
@@ -603,6 +665,8 @@ struct FocusTimerView: View {
         isFocusPeriod = true
         currentRound = 1
         timeRemaining = focusMinutes * 60
+        showFlash = false
+        hasStartedAutomatically = false
     }
     
     private func stopTimer() {
@@ -613,8 +677,15 @@ struct FocusTimerView: View {
     private func tick() {
         if timeRemaining > 0 {
             timeRemaining -= 1
+            // Flash logic updated: flash for both focus and break periods when 5 seconds or less remaining, but not zero
+            if timeRemaining <= 5 && timeRemaining > 0 {
+                showFlash.toggle()
+            } else {
+                showFlash = false
+            }
         } else {
             // Time's up, switch focus/break or finish
+            showFlash = false
             if isFocusPeriod {
                 // Switch to break
                 isFocusPeriod = false
