@@ -25,24 +25,31 @@ extension Font {
 
 // MARK: - SplashScreenView
 struct SplashScreenView: View {
+    @State private var currentImageIndex = 0
+    private let images = [
+        "splash-screen-01",
+        "splash-screen-02",
+        "splash-screen-03",
+        "splash-screen-04",
+        "splash-screen-05",
+        "splash-screen-06"
+    ]
+    
     var body: some View {
-        ZStack {
-            Color.accentYellow
-                .ignoresSafeArea()
-            VStack(spacing: 20) {
-                Image("splash-logo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 150, height: 150)
-                Text("Final Project")
-                    .font(.quicksand(size: 32, weight: .bold))
-                    .foregroundColor(.white)
-                Text("By Evelyn Flores")
-                    .font(.quicksand(size: 18, weight: .medium))
-                    .foregroundColor(.white.opacity(0.8))
+        Image(images[currentImageIndex])
+            .resizable()
+            .scaledToFill()
+            .ignoresSafeArea()
+            .animation(.easeIn(duration: 3), value: currentImageIndex)
+            .onAppear {
+                Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
+                    if currentImageIndex < images.count - 1 {
+                        currentImageIndex += 1
+                    } else {
+                        timer.invalidate()
+                    }
+                }
             }
-            .padding()
-        }
     }
 }
 
