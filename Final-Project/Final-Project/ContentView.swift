@@ -25,9 +25,15 @@ extension Font {
 
 // MARK: - Data Models
 struct Assignment: Identifiable {
-    let id = UUID()
-    let name: String
-    let isUrgent: Bool
+    let id: UUID
+    var name: String
+    var isUrgent: Bool
+    
+    init(id: UUID = UUID(), name: String, isUrgent: Bool) {
+        self.id = id
+        self.name = name
+        self.isUrgent = isUrgent
+    }
 }
 
 struct ClassInfo: Identifiable {
@@ -275,9 +281,24 @@ struct AssignmentDetailView: View {
     @State private var repeatCount: Int = 4
     @State private var showFocusTimer: Bool = false
     
+    @State private var showEditSheet: Bool = false
+    
+    // Local editable states for assignment
+    @State private var editableName: String
+    @State private var editableIsUrgent: Bool
+    
+    init(assignment: Assignment, className: String, dayIndex: Int) {
+        self.assignment = assignment
+        self.className = className
+        self.dayIndex = dayIndex
+        // Initialize editable states
+        _editableName = State(initialValue: assignment.name)
+        _editableIsUrgent = State(initialValue: assignment.isUrgent)
+    }
+    
     var body: some View {
         VStack(spacing: 20) {
-            Text(assignment.name)
+            Text(editableName)
                 .font(.quicksand(size: 28, weight: .bold))
                 .padding(.top)
             
@@ -292,18 +313,30 @@ struct AssignmentDetailView: View {
             // Focus time picker
             VStack(alignment: .leading, spacing: 8) {
                 Stepper(value: $focusMinutes, in: 1...120) {
-                    Text("Focus time: \(focusMinutes)")
-                        .font(.quicksand(size: 18))
+                    HStack {
+                        Text("Focus Time:")
+                            .font(.quicksand(size: 18))
+                        Text("\(focusMinutes)")
+                            .font(.quicksand(size: 18, weight: .semibold))
+                    }
                 }
                 .padding()
                 Stepper(value: $breakMinutes, in: 1...60) {
-                    Text("Break time: \(breakMinutes)")
-                        .font(.quicksand(size: 18))
+                    HStack {
+                        Text("Break Time:")
+                            .font(.quicksand(size: 18))
+                        Text("\(breakMinutes)")
+                            .font(.quicksand(size: 18, weight: .semibold))
+                    }
                 }
                 .padding()
                 Stepper(value: $repeatCount, in: 1...10) {
-                    Text("Repeat count: \(repeatCount)")
-                        .font(.quicksand(size: 18))
+                    HStack {
+                        Text("Repeat Count:")
+                            .font(.quicksand(size: 18))
+                        Text("\(repeatCount)")
+                            .font(.quicksand(size: 18, weight: .semibold))
+                    }
                 }
                 .padding()
             }
@@ -331,8 +364,67 @@ struct AssignmentDetailView: View {
             .padding(.horizontal)
             .padding(.bottom)
         }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Edit") {
+                    showEditSheet = true
+                }
+                .font(.quicksand(size: 18, weight: .medium))
+                .foregroundColor(Color.accentYellow)
+            }
+        }
+        .sheet(isPresented: $showEditSheet) {
+            NavigationStack {
+                VStack(spacing: 20) {
+                    Form {
+                        Section(header: Text("Assignment Info").font(.quicksand(size: 20, weight: .semibold))) {
+                            TextField("Assignment Name", text: $editableName)
+                                .font(.quicksand(size: 18))
+                                .foregroundColor(.textBlack)
+                                .textInputAutocapitalization(.words)
+                                .disableAutocorrection(true)
+                            Toggle(isOn: $editableIsUrgent) {
+                                Text("Urgent")
+                                    .font(.quicksand(size: 18))
+                            }
+                        }
+                    }
+                    .scrollContentBackground(.hidden)
+                    .background(Color.bgWhite)
+                }
+                .background(Color.bgWhite.ignoresSafeArea())
+                .navigationTitle("Edit Assignment")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") {
+                            // Reset edits to original on cancel
+                            editableName = assignment.name
+                            editableIsUrgent = assignment.isUrgent
+                            showEditSheet = false
+                        }
+                        .font(.quicksand(size: 18))
+                        .foregroundColor(.textGray)
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Save") {
+                            // Update local assignment info for session
+                            // This updates only local editable states in this view as assignment is let constant;
+                            // To persist edits, data model and storage would be needed.
+                            showEditSheet = false
+                        }
+                        .disabled(editableName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        .font(.quicksand(size: 18, weight: .semibold))
+                        .foregroundColor(editableName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? .gray : Color.accentYellow)
+                    }
+                }
+            }
+        }
         .sheet(isPresented: $showFocusTimer) {
-            FocusTimerView(assignment: assignment, focusMinutes: focusMinutes, breakMinutes: breakMinutes, repeatCount: repeatCount)
+            FocusTimerView(assignment: Assignment(id: assignment.id, name: editableName, isUrgent: editableIsUrgent),
+                           focusMinutes: focusMinutes,
+                           breakMinutes: breakMinutes,
+                           repeatCount: repeatCount)
         }
     }
 }
