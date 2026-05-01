@@ -1,6 +1,4 @@
-# edits.md
-
-a numbered list of the adjustments you made to your app after the initial prompt
+# Edits
 
 1. Centered the month and added some space under it. I also made it larger. 
 2. I made the assignment names larger and bolder. 
@@ -10,4 +8,4 @@ a numbered list of the adjustments you made to your app after the initial prompt
 6. I changed some text for the timers so that it is easier to read and added some padding so that the three pieces of information were more separated.
 7. Edited the "End" timer button format to look like the others.
 8. Added a splash screen for when the app is opened. 
-9. 
+9. A check off feature was added so the student can check off if the task was completed.
