@@ -33,7 +33,7 @@ struct SplashScreenView: View {
                     .resizable()
                     .background(Color.highlightYellow)
 
-                
+
             }
         }
     }
@@ -44,18 +44,20 @@ struct Assignment: Identifiable {
     let id: UUID
     var name: String
     var isUrgent: Bool
-    
-    init(id: UUID = UUID(), name: String, isUrgent: Bool) {
+    var isComplete: Bool
+
+    init(id: UUID = UUID(), name: String, isUrgent: Bool, isComplete: Bool = false) {
         self.id = id
         self.name = name
         self.isUrgent = isUrgent
+        self.isComplete = isComplete
     }
 }
 
 struct ClassInfo: Identifiable {
     let id = UUID()
     let name: String
-    let assignments: [[Assignment]] // Each inner array is a day’s assignments
+    var assignments: [[Assignment]] // Each inner array is a day’s assignments
 }
 
 // MARK: - Sheet Info Struct
@@ -67,7 +69,7 @@ struct AssignmentDetailSheetInfo: Identifiable {
 }
 
 // MARK: - Sample Data
-let sampleClasses: [ClassInfo] = [
+let sampleClassesData: [ClassInfo] = [
     ClassInfo(name: "Math", assignments: [
         [Assignment(name: "Homework 10.4", isUrgent: false), Assignment(name: "Quiz Ch. 10", isUrgent: true)],      // Mon Apr 27
         [Assignment(name: "Homework 10.5", isUrgent: false), Assignment(name: "Review notes", isUrgent: false)],    // Tue Apr 28
@@ -126,6 +128,7 @@ struct ContentView: View {
     @Namespace private var anim
     @State private var selectedAssignment: AssignmentDetailSheetInfo? = nil
     @State private var showSplash: Bool = true
+    @State private var classes: [ClassInfo] = sampleClassesData
     
     var body: some View {
         ZStack {
@@ -179,11 +182,11 @@ struct ContentView: View {
 
                             // Grid
                             GeometryReader { geo in
-                                let rowCount = sampleClasses.count
+                                let rowCount = classes.count
                                 let cellHeight = geo.size.height / CGFloat(rowCount)
                                 
                                 VStack(spacing: 1) {
-                                    ForEach(Array(sampleClasses.enumerated()), id: \.element.id) { rowIdx, classInfo in
+                                    ForEach(Array(classes.enumerated()), id: \.element.id) { rowIdx, classInfo in
                                         HStack(spacing: 0) {
                                             // Class Name as rotated text
                                             Text(classInfo.name)
@@ -200,11 +203,11 @@ struct ContentView: View {
                                             // Assignments for this class, this day
                                             let assignments = classInfo.assignments[safe: selectedDay] ?? []
                                             VStack(alignment: .leading, spacing: 4) {
-                                                ForEach(assignments) { assignment in
-                                                    AssignmentCell(assignment: assignment)
+                                                ForEach(assignments.indices, id: \.self) { assignIdx in
+                                                    AssignmentCell(assignment: $classes[rowIdx].assignments[selectedDay][assignIdx])
                                                         .frame(maxWidth: .infinity)
                                                         .onTapGesture {
-                                                            selectedAssignment = AssignmentDetailSheetInfo(assignment: assignment, className: classInfo.name, dayIndex: selectedDay)
+                                                            selectedAssignment = AssignmentDetailSheetInfo(assignment: classes[rowIdx].assignments[selectedDay][assignIdx], className: classInfo.name, dayIndex: selectedDay)
                                                         }
                                                 }
                                             }
@@ -273,25 +276,35 @@ struct ContentView: View {
 }
 
 struct AssignmentCell: View {
-    let assignment: Assignment
+    @Binding var assignment: Assignment
     var body: some View {
-        Text(assignment.name)
-            .font(.quicksand(size: 15, weight: .semibold))
-            .foregroundColor(assignment.isUrgent ? .textBlack : .textGray)
-            .padding(.vertical, 2)
-            .padding(.horizontal, 8)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                assignment.isUrgent ? Color.highlightYellow : Color.bgWhite
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 6)
-                    .stroke(
-                        assignment.isUrgent ? Color.clear : Color.gridGray,
-                        lineWidth: assignment.isUrgent ? 0 : 2.5
-                    )
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 6))
+        HStack {
+            Button(action: {
+                assignment.isComplete.toggle()
+            }) {
+                Image(systemName: assignment.isComplete ? "checkmark.circle.fill" : "circle")
+                    .foregroundColor(assignment.isComplete ? .accentYellow : .gridGray)
+                    .font(.system(size: 22, weight: .bold))
+            }
+            Text(assignment.name)
+                .font(.quicksand(size: 15, weight: .semibold))
+                .foregroundColor(assignment.isComplete ? .textGray : (assignment.isUrgent ? .textBlack : .textGray))
+                .strikethrough(assignment.isComplete, color: .textGray)
+                .padding(.vertical, 2)
+                .padding(.horizontal, 8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .background(
+            assignment.isComplete ? Color.clear : (assignment.isUrgent ? Color.highlightYellow : Color.bgWhite)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(
+                    assignment.isComplete ? Color.clear : (assignment.isUrgent ? Color.clear : Color.gridGray),
+                    lineWidth: assignment.isComplete ? 0 : (assignment.isUrgent ? 0 : 2.5)
+                )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 6))
     }
 }
 
