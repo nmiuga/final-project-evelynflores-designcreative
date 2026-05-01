@@ -25,31 +25,17 @@ extension Font {
 
 // MARK: - SplashScreenView
 struct SplashScreenView: View {
-    @State private var currentImageIndex = 0
-    private let images = [
-        "splash-screen-01",
-        "splash-screen-02",
-        "splash-screen-03",
-        "splash-screen-04",
-        "splash-screen-05",
-        "splash-screen-06"
-    ]
-    
+    private let beeImage = "splash-screen-06"
     var body: some View {
-        Image(images[currentImageIndex])
-            .resizable()
-            .scaledToFill()
-            .ignoresSafeArea()
-            .animation(.easeIn(duration: 3), value: currentImageIndex)
-            .onAppear {
-                Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
-                    if currentImageIndex < images.count - 1 {
-                        currentImageIndex += 1
-                    } else {
-                        timer.invalidate()
-                    }
-                }
+        ZStack {
+            VStack(spacing: 30) {
+                Image(beeImage)
+                    .resizable()
+                    .background(Color.highlightYellow)
+
+                
             }
+        }
     }
 }
 
@@ -724,3 +710,4 @@ struct FocusTimerView: View {
 #Preview {
     ContentView()
 }
+
